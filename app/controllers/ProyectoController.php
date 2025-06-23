@@ -12,10 +12,14 @@ class ProyectoController extends Controller
     }
     public function actualizar()
     {
-        return 'home';
+        $this->render("proyecto", "index", [], 'layout');
     }
     public function eliminar()
     {
         return 'home';
+    }
+    public function read()
+    {
+        $this->render("proyecto", "index", [], 'layout');
     }
 }

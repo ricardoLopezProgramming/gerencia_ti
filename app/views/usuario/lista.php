@@ -75,7 +75,7 @@ if (isset($_GET['actualizarid'])) {
                                 <select onchange="if(this.value) window.location.href=this.value" class="btn border-bottom">
                                     <option selected disabled>Selecciona una acción</option>
                                     <option value="/public/?page=ver_detalles&id=<?= $ticket['ticket_id'] ?>">Ver detalles</option>
-                                    <option value="/public/?actualizarid=<?= urlencode($usuario['id']) ?>">Actualizar</option>
+                                    <option value="/public/usuario/?actualizarid=<?= urlencode($usuario['id']) ?>">Actualizar</option>
                                     <option value="/public/usuario/control/?eliminarid=<?= urlencode($usuario['id']) ?>">Eliminar</option>
                                 </select>
                             </td>

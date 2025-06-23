@@ -5,13 +5,15 @@ if (isset($_GET['eliminarid'])) {
     exit;
 }
 
-$usuarioActualizar = null;
+$proyectoEditar = null;
 if (isset($_GET['actualizarid'])) {
-    $usuarioActualizar = $usuarioModel->getByID($_GET['actualizarid']);
-    if ($usuarioActualizar) {
-        $usuarioActualizar = $usuarioActualizar[0]; // solo uno
+    $proyectoEditar = $proyectoModel->getByID($_GET['actualizarid']);
+    if ($proyectoEditar) {
+        $proyectoEditar = $proyectoEditar[0]; // solo uno
+        $proyectoEditar['usuarios'] = $proyectoModel->getUsuariosDeProyecto($proyectoEditar['id']);
     }
 }
+
 ?>
 
 <div class="row g-4">
@@ -63,27 +65,27 @@ if (isset($_GET['actualizarid'])) {
                 <tbody>
                     <?php foreach (isset($_GET['search']) ? $proyectoModel->getProyectoByID($_GET['search']) : $proyectoModel->getAllProyectos() as $proyecto): ?>
                         <tr>
-                        <td><?= htmlspecialchars($proyecto['id']) ?></td>
-                        <td><?= htmlspecialchars($proyecto['nombre']) ?></td>
-                        <td><?= htmlspecialchars($proyecto['descripcion']) ?></td>
-                        <td><?= htmlspecialchars($proyecto['fecha_inicio']) ?></td>
-                        <td><?= htmlspecialchars($proyecto['fecha_fin']) ?></td>
-                        <td><?= htmlspecialchars($proyecto['estado']) ?></td>
-                        <td>
-                            <select onchange="if(this.value) window.location.href=this.value" class="form-select form-select-sm">
-                                <option selected disabled>Selecciona acción</option>
-                                <option value="/public/?page=detalles_proyecto&id=<?= $proyecto['id'] ?>">Ver detalles</option>
-                                <option value="/public/?page=formulario_actualizar_proyecto&id=<?= $proyecto['id'] ?>"
-                                    <?= ($_SESSION['rol_id'] == 2 || $_SESSION['rol_id'] == 3) ? '' : 'disabled' ?>>
-                                    Actualizar
-                                </option>
-                                <option value="../app/controllers/EliminarProyectoController.php?id=<?= $proyecto['id'] ?>"
-                                    <?= ($_SESSION['rol_id'] == 2 || $_SESSION['rol_id'] == 3) ? '' : 'disabled' ?>>
-                                    Eliminar
-                                </option>
-                            </select>
-                        </td>
-                    </tr>
+                            <td><?= htmlspecialchars($proyecto['id']) ?></td>
+                            <td><?= htmlspecialchars($proyecto['nombre']) ?></td>
+                            <td><?= htmlspecialchars($proyecto['descripcion']) ?></td>
+                            <td><?= htmlspecialchars($proyecto['fecha_inicio']) ?></td>
+                            <td><?= htmlspecialchars($proyecto['fecha_fin']) ?></td>
+                            <td>
+                                <select name="id_estado" class="btn border-bottom">
+                                    <?php foreach ($estadoProyectoModel->getAll() as $estado): ?>
+                                        <option value="<?= $estado['id'] ?>" <?= $estado['nombre'] == $proyecto['estado'] ? 'selected' : "" ?>><?= $estado['nombre'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select onchange="if(this.value) window.location.href=this.value" class="form-select form-select-sm">
+                                    <option selected disabled>Selecciona acción</option>
+                                    <option value="/public/?page=detalles_proyecto&id=<?= $proyecto['id'] ?>">Ver detalles</option>
+                                    <option value="/public/proyecto/actualizar/<?= urlencode($proyecto['id']) ?>">Actualizar</option>
+                                    <option value="/public/proyecto/eliminar/<?= urlencode($proyecto['id']) ?>">Eliminar</option>
+                                </select>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>

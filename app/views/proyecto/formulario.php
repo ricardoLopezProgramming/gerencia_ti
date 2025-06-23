@@ -21,7 +21,7 @@ if (isset($_POST['registrarProyecto'])) {
         $proyectoModel->asignarUsuarios($id, $usuarios);
 
         echo "<script>alert('Proyecto actualizado correctamente');</script>";
-        header('Location: /public/?page=proyectos');
+        header('Location: /public/proyecto/control');
         exit;
     } else {
         // ✅ REGISTRO NUEVO
@@ -44,6 +44,7 @@ if (isset($_POST['registrarProyecto'])) {
                 <div class="mb-3">
                     <label for="nombre" class="form-label">Nombre del proyecto</label>
                     <input type="text" name="nombre" id="nombre" class="form-control" required value="<?= $proyectoEditar['nombre'] ?? '' ?>">
+                    <?php var_dump($proyectoEditar['nombre']); ?>
                 </div>
 
                 <div class="mb-3">

@@ -8,12 +8,14 @@ require_once __DIR__ . '/../../services/Database.php';
 require_once __DIR__ . '/../../models/Usuario.php';
 require_once __DIR__ . '/../../models/Rol.php';
 require_once __DIR__ . '/../../models/Proyecto.php';
+require_once __DIR__ . '/../../models/EstadoProyecto.php';
 //require_once __DIR__ . '/../../models/Rol.php';
 $db = Database::getInstance();
 $conn = $db->getConnection();
 $usuarioModel = new Usuario($conn);
 $rolModel = new Rol($conn);
 $proyectoModel = new Proyecto($conn);
+$estadoProyectoModel = new EstadoProyecto($conn);
 
 ?>
 
