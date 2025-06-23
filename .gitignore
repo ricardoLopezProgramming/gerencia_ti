@@ -3,4 +3,4 @@
 .dockerignore
 .env
 docker-compose.yml
-Dockerfile
+Dockerfile 
