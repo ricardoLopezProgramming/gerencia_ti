@@ -1,0 +1,12 @@
+#Ignorar configuracion de firebase
+.idx
+
+#Ignorar carperta vscode
+.vscode
+
+# Ignorar archivos del sistema y Git
+.git
+.gitignore
+
+#Ignorar archivo readme
+README.md

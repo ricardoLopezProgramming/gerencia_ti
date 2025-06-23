@@ -1,0 +1,61 @@
+
+    html,
+    body {
+        /* height: 100%;
+        margin: 0; */
+        overflow-x: hidden;
+    }
+
+    /* .full-height {
+        height: 100vh;
+    } */
+
+    .main-content {
+        /* margin-left: var(--sidebar-width-collapsed); */
+        transition: all 0.3s ease;
+        flex-grow: 1;
+        /* Ocupa todo el ancho disponible */
+        padding: 0 20px;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .bento-card {
+        border-radius: 1rem;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+
+    .bento-card:hover {
+        transform: scale(1.02);
+    }
+
+    .h-50px {
+        height: 50px;
+    }
+
+    .h-100px {
+        height: 100px;
+    }
+
+    .h-400px {
+        height: 400px;
+    }
+
+    .h-500px {
+        height: 500px;
+    }
+
+    .h-600px {
+        height: 600px;
+    }
+
+    .navbar-icon-btn {
+        margin-left: 0.5rem;
+    }
+
+    .navbar .btn {
+        white-space: nowrap;
+        height: 38px;
+    } 

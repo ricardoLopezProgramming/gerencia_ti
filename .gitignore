@@ -1,0 +1,6 @@
+.idx
+.vscode
+.dockerignore
+.env
+docker-compose.yml
+Dockerfile
