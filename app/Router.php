@@ -1,41 +1,31 @@
 <?php
-require_once __DIR__ . '/config.php';
-class Router
-{
-    private $controller;
-    private $method;
-    private $params = [];
+    class Router{
+        private $controller;
+        private $method;
 
-    public function __construct()
-    {
-        $this->matchRoute();
-    }
+        public function __construct()
+        {
+            $this->matchRoute();
+        }
 
-    public function matchRoute()
-    {
-        $requestUri = $_SERVER['REQUEST_URI'];
-        $path = parse_url($requestUri, PHP_URL_PATH);
-        $url = explode("/", trim($path, "/")); // elimina / inicial y final
+        public function matchRoute(){
 
-        // Asigna controlador y método
-        $this->controller = !empty($url[1]) ? ucfirst($url[1]) . 'Controller' : 'UsuarioController';
-        $this->method = !empty($url[2]) ? $url[2] : 'read';
+            $url = explode('/', URL);
 
-        // Parámetros adicionales (como el ID)
-        $this->params = array_slice($url, 3);
+            $this->controller = !empty($url[1]) ? $url[1] : 'usuario';
+            $this->method = !empty($url[2]) ? explode('?', $url[2])[0] : 'lista';
 
-        require_once __DIR__ . '/controllers/' . $this->controller . '.php';
-    }
+            $this->controller = ucfirst($this->controller) . 'Controller';
 
-    public function run()
-    {
-        $controller = new $this->controller();
-        $method = $this->method;
+            require_once(__DIR__ . '/controllers/'.$this->controller.'.php');
+        }
 
-        if (method_exists($controller, $method)) {
-            call_user_func_array([$controller, $method], $this->params);
-        } else {
-            echo "Método {$method} no encontrado en {$this->controller}";
+        public function run(){
+            $database = Database::getInstance();
+            $connection = $database->getConnection();
+
+            $controller = new $this->controller($connection);
+            $method = $this->method;
+            $controller->$method();
         }
     }
-}

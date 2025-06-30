@@ -27,7 +27,7 @@ class Database
 
     public function getConnection(): PDO
     {
-        $conn = null;
+        $connection = null;
         try {
             $dsn = 'mysql:host=' . self::$dbhost . ';port=' . self::$dbport . ';dbname=' . self::$dbdatabase;
             $options = [
@@ -36,11 +36,11 @@ class Database
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
             ];
-            $conn = new PDO($dsn, self::$dbuser, self::$dbpassword, $options);
+            $connection = new PDO($dsn, self::$dbuser, self::$dbpassword, $options);
         } catch (PDOException $e) {
             throw new RuntimeException("Error de conexión a la base de datos: " . $e->getMessage());
         }
-        return $conn;
+        return $connection;
     }
     
 }

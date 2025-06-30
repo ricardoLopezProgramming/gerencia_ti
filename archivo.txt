@@ -1,0 +1,93 @@
+<?php
+require_once(__DIR__ . '/../models/Usuario.php');
+require_once(__DIR__ . '/../models/Rol.php');
+require_once(__DIR__ . '/../helpers/UsuarioHelper.php');
+
+class UsuarioController extends Controller
+{
+    private $usuarioModel;
+    private $connection;
+
+    public function __construct(PDO $connection)
+    {
+        $this->conn = $connection;
+        $this->usuarioModel = new Usuario($this->conn);
+    }
+
+    public function home()
+    {
+        $connection = Database::getInstance()->getConnection();
+        $rolModel = new Rol($connection);
+        $roles = $rolModel->getAll();
+        $mensaje = '';
+        $usuarioActualizar = null;
+
+        // Eliminar
+        if (isset($_GET['eliminarid'])) {
+            $this->usuarioModel->deleteById($_GET['eliminarid']);
+            header('Location: /public/usuario/home');
+            exit;
+        }
+
+        // Cargar datos para actualizar
+        if (isset($_GET['actualizarid'])) {
+            $usuarioActualizar = $this->usuarioModel->getById($_GET['actualizarid']);
+            $usuarioActualizar = $usuarioActualizar ? $usuarioActualizar[0] : null;
+        }
+
+        // Registro o actualización
+        if (isset($_POST['registrarUsuario'])) {
+            $id = $_POST['usuario_id'] ?? null;
+            $nombre = $_POST['nombre'];
+            $correo = $_POST['correo'];
+            $password = $_POST['password'];
+            $rol_id = $_POST['rol_id'];
+
+            $imagenTmp = $_FILES['imagen']['tmp_name'];
+            $imagenNombre = $_FILES['imagen']['name'];
+            $ext = strtolower(pathinfo($imagenNombre, PATHINFO_EXTENSION));
+
+            $directorio = __DIR__ . '/../../public/assets/image/';
+            $publicPath = '/public/assets/image/';
+
+            // // Verificar duplicado
+            // $existeCorreo = $this->usuarioModel->existeCorreo($correo, $id);
+            // if ($existeCorreo) {
+            //     $mensaje = 'Correo ya registrado.';
+            // } else {
+                // Datos comunes
+                $data = [
+                    'nombre' => $nombre,
+                    'correo' => $correo,
+                    'password' => $password,
+                    'rol_id' => $rol_id
+                ];
+
+                if ($id) {
+                    // Actualización
+                    if (!empty($imagenNombre)) {
+                        $imgPath = $publicPath . $id . '.' . $ext;
+                        move_uploaded_file($imagenTmp, $directorio . $id . '.' . $ext);
+                        $data['imagen'] = $imgPath;
+                    }
+                    $this->usuarioModel->updateById($id, $data);
+                    header('Location: /public/usuario/home');
+                    exit;
+                } else {
+                    // Registro nuevo con helper
+                    insertUsuario($this->conn, $data, $_FILES['imagen']);
+                }
+                
+            // }
+        }
+
+        $usuarios = $this->usuarioModel->getAllUsuarios();
+
+        $this->render('usuario', 'home', [
+            'usuarios' => $usuarios,
+            'roles' => $roles,
+            'usuarioActualizar' => $usuarioActualizar,
+            'mensaje' => $mensaje
+        ], 'site');
+    }
+}

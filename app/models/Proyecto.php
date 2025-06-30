@@ -1,54 +1,75 @@
 <?php
-class Proyecto extends ORM
+class Proyecto extends Orm
 {
-    public $conn = null;
-
-    public function __construct($conn)
+    public function __construct(PDO $connection, $id = "id")
     {
-        $this->conn = $conn;
-        parent::__construct('id', 'proyecto', $conn);
+        parent::__construct($id, 'proyecto', $connection);
     }
 
-    // ProyectoModel.php
-
-    public function crearProyecto($nombre, $descripcion, $fechaInicio, $fechaFin, $usuarios)
+    public function getAllWithEstadoAndBoss()
     {
-        $data = [
-            'nombre' => $nombre,
-            'descripcion' => $descripcion,
-            'fecha_inicio' => $fechaInicio,
-            'fecha_fin' => $fechaFin,
-            'estado_id' => 1 // estado inicial por defecto
-        ];
-
-        $this->insert($data); // Método del ORM
-        $nuevoId = $this->lastId(); // Último ID insertado
-
-        $this->asignarUsuarios($nuevoId, $usuarios);
-
-        return $nuevoId;
+        $sql = "SELECT p.id, p.nombre, p.descripcion, p.fecha_inicio, p.fecha_fin, ep.nombre AS estado, u.nombre AS autor FROM proyecto p INNER JOIN estado_proyecto ep ON p.estado_id = ep.id INNER JOIN usuario u ON p.jefe_id = u.id ORDER BY p.id ASC";
+        $stmt = $this->connection->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function asignarUsuarios($proyectoId, $usuarios)
+    // En Usuario.php o Proyecto.php
+    public function getUsuariosAsignados($proyectoId)
     {
-        // Elimina asignaciones previas si estás actualizando
-        $sqlDelete = "DELETE FROM proyecto_usuario WHERE proyecto_id = ?";
-        $stmtDelete = $this->conn->prepare($sqlDelete);
-        $stmtDelete->execute([$proyectoId]);
-
-        // Inserta nuevas asignaciones
-        $sqlInsert = "INSERT INTO proyecto_usuario (proyecto_id, usuario_id) VALUES (?, ?)";
-        $stmtInsert = $this->conn->prepare($sqlInsert);
-        foreach ($usuarios as $userId) {
-            $stmtInsert->execute([$proyectoId, $userId]);
-        }
+        $stmt = $this->connection->prepare("
+        SELECT u.* FROM usuario u
+        INNER JOIN proyecto_usuario pu ON u.id = pu.usuario_id
+        WHERE pu.proyecto_id = :proyecto_id
+    ");
+        $stmt->execute(['proyecto_id' => $proyectoId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getUsuariosDeProyecto($proyectoId)
+    public function create(array $data): int
     {
-        $sql = "SELECT usuario_id FROM proyecto_usuario WHERE proyecto_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$proyectoId]);
-        return array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'usuario_id');
+        $sql = "INSERT INTO proyecto (nombre, descripcion, estado_id, jefe_id, fecha_inicio, fecha_fin)
+            VALUES (:nombre, :descripcion, :estado_id, :jefe_id, :fecha_inicio, :fecha_fin)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([
+            ':nombre' => $data['nombre'],
+            ':descripcion' => $data['descripcion'],
+            ':estado_id' => $data['estado_id'],
+            ':jefe_id' => $data['jefe_id'],
+            ':fecha_inicio' => $data['fecha_inicio'],
+            ':fecha_fin' => $data['fecha_fin'],
+        ]);
+        return (int)$this->connection->lastInsertId();
     }
+
+    public function asignarUsuario(int $proyectoId, int $usuarioId): void
+    {
+        $sql = "INSERT IGNORE INTO proyecto_usuario (proyecto_id, usuario_id) VALUES (:proyecto_id, :usuario_id)";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute([
+            ':proyecto_id' => $proyectoId,
+            ':usuario_id' => $usuarioId,
+        ]);
+    }
+
+    public function eliminarUsuariosAsignados(int $proyectoId): void
+{
+    $stmt = $this->connection->prepare("DELETE FROM proyecto_usuario WHERE proyecto_id = :proyecto_id");
+    $stmt->execute([':proyecto_id' => $proyectoId]);
+}
+
+public function updateProyecto(array $data)
+{
+    $sql = "UPDATE proyecto SET
+        nombre = :nombre,
+        descripcion = :descripcion,
+        estado_id = :estado_id,
+        jefe_id = :jefe_id,
+        fecha_inicio = :fecha_inicio,
+        fecha_fin = :fecha_fin
+        WHERE id = :id";
+
+    $stmt = $this->connection->prepare($sql);
+    return $stmt->execute($data);
+}
+
 }

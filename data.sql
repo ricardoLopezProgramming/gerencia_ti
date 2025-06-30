@@ -9,7 +9,7 @@ CREATE TABLE usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
     correo VARCHAR(100) UNIQUE,
-    contraseña VARCHAR(255),
+    password VARCHAR(255),
     rol_id INT,
     imagen VARCHAR(255),
     FOREIGN KEY (rol_id) REFERENCES rol(id)
@@ -71,7 +71,7 @@ insert into rol(nombre) values
 ('administrativo');
 
 -- Usuarios
--- insert into usuario (nombre, correo, contraseña, rol_id) values
+-- insert into usuario (nombre, correo, password, rol_id) values
 -- ('franco', 'franco@myd.com', 'franco123', 1),
 -- ('maria', 'maria@myd.com', 'maria123', 2),
 -- ('ricardo', 'ricardo@myd.com', 'ricardo123', 3),
@@ -80,9 +80,9 @@ insert into rol(nombre) values
 
 -- Estados de proyecto
 insert into estado_proyecto (nombre) values
-('abierto'),
+('pendiente'),
 ('en proceso'),
-('cerrado');
+('terminado');
 
 -- Proyectos
 insert into proyecto (nombre, descripcion, fecha_inicio, fecha_fin, estado_id) values
@@ -160,7 +160,7 @@ insert into rol(nombre) values
 ('administrativo');
 
 -- Usuarios (sin cambio)
-insert into usuario (nombre, correo, contraseña, rol_id) values
+insert into usuario (nombre, correo, password, rol_id) values
 ('franco', 'franco@myd.com', 'franco123', 1),
 ('maria', 'maria@myd.com', 'maria123', 2),
 ('ricardo', 'ricardo@myd.com', 'ricardo123', 3),
@@ -188,9 +188,9 @@ insert into proyecto_usuario (proyecto_id, usuario_id) values
 
 -- Estados de ticket (sin cambio)
 insert into estado_ticket (nombre) values
-('abierto'),
+('pendiente'),
 ('en proceso'),
-('cerrado');
+('terminado');
 
 -- Tickets (adaptados a tareas típicas en proyectos eléctricos)
 insert into ticket (nombre, descripcion, proyecto_id) values
@@ -219,3 +219,6 @@ insert into ticket (nombre, descripcion, estado_id, proyecto_id) values
 ('Inspección visual', 'Revisión visual de instalaciones eléctricas', 1, 3),
 ('Pruebas eléctricas de seguridad', 'Medición y pruebas según normativa vigente', 2, 3),
 ('Emisión de certificados', 'Generación de reportes y certificados oficiales', 3, 3);
+
+select * from usuario;
+select * from ticket_usuario;

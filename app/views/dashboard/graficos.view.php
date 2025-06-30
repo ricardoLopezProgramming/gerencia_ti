@@ -1,0 +1,1 @@
+<h1>Bienvenido <?= $_SERVER['nombre']; ?></h1>

@@ -1,8 +1,8 @@
 <?php
 class EstadoProyecto extends ORM
 {
-    public function __construct($conn)
+    public function __construct($connection, $id = 'id')
     {
-        parent::__construct('id', 'estado_proyecto', $conn);
+        parent::__construct('id', 'estado_proyecto', $connection);
     }
 }
