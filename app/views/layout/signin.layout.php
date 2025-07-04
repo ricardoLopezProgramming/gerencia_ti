@@ -22,7 +22,7 @@
                 <div class="bg-light d-flex align-items-center text-light" style="font-size: .9rem;">
                     <?php echo $content ?>
                 </div>
-                <div class="bg-success">div3</div>
+                <div class="bg-primary">div3</div>
             </main>
         </div>
     </div>

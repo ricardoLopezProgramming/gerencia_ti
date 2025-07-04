@@ -1,7 +1,10 @@
 <?php
+require_once __DIR__ . '/../models/Usuario.php';
+
 class SignInController extends Controller
 {
     private PDO $connection;
+    private $usuarioModel;
 
     public function __construct(PDO $connection)
     {
@@ -17,23 +20,22 @@ class SignInController extends Controller
     public function authentication()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $correo = trim($_POST['correo']);
-            $password = $_POST['contraseña'];
+            $email = trim($_POST['email']);
+            $password = $_POST['password'];
 
             try {
-                $stmt = $this->connection->prepare("SELECT * FROM usuario WHERE correo = ?");
-                $stmt->execute([$correo]);
-                $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+                $usuarioModel = new Usuario($this->connection, "email");
+                $usuario = $usuarioModel->getByIdWithRoleAndDepartment($email)[0];
 
                 if ($usuario && $password === $usuario['password']) {
                     $_SESSION['id'] = $usuario['id'];
-                    $_SESSION['nombre'] = $usuario['nombre'];
-                    $_SESSION['correo'] = $usuario['correo'];
-                    $_SESSION['password'] = $usuario['password'];
-                    $_SESSION['imagen'] = $usuario['imagen'];
-                    $_SESSION['rol_id'] = $usuario['rol_id'];
-
-                    header('Location: /public/dashboard/inicio');
+                    $_SESSION['name'] = $usuario['name'];
+                    $_SESSION['email'] = $usuario['email'];
+                    $_SESSION['avatar'] = $usuario['avatar'];
+                    $_SESSION['role'] = $usuario['role'];
+                    $_SESSION['department'] = $usuario['department'];
+                    
+                    header('Location: /public/dashboard/index');
                     exit;
                 } else {
                     echo "❌ Credenciales incorrectas.";

@@ -38,7 +38,7 @@
                         <?php foreach ($departamentos as $departamento): ?>
                             <tr>
                                 <td><?= htmlspecialchars($departamento['id']) ?></td>
-                                <td><?= htmlspecialchars($departamento['nombre']) ?></td>
+                                <td><?= htmlspecialchars($departamento['name']) ?></td>
 
                                 <td>
                                     <div class="dropdown">

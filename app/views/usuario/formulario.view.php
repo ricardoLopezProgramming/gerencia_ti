@@ -1,67 +1,82 @@
-<div class="container">
-    <div class="row">
-        <div class="col-md-5 mx-auto">
-            <div class="bento-card bg-white d-flex align-items-center justify-content-center border border-secondary">
-                <div class="p-4 w-100 h-100">
-                    <form action="/public/usuario/registrar" method="post" class="h-100 d-flex flex-column justify-content-between" enctype="multipart/form-data">
-                        <div>
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input type="text" name="nombre" id="nombre" class="form-control" required value="<?= $usuario['nombre'] ?? '' ?>">
-                            </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-center">
+        <div class="bento-card bg-white border border-secondary p-4" style="max-width: 600px; width: 100%;">
+            <form action="/public/usuario/<?= isset($user['id']) ? 'actualizar' : 'registrar' ?>" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3">
 
-                            <div class="mb-3">
-                                <label for="emailName" class="form-label">Correo</label>
-                                <input type="email" class="form-control" id="emailName" name="correo" required value="<?= $usuario['correo'] ?? '' ?>">
-                                <div id="emailHelp" class="form-text">Ingresa tu correo.</div>
-                            </div>
+                <!-- Hidden ID for edit -->
+                <?php if (!empty($user['id'])): ?>
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($user['id']) ?>">
+                <?php endif; ?>
 
-                            <div class="mb-3">
-                                <label for="inputPassword" class="form-label">password</label>
-                                <input type="password" class="form-control" id="inputPassword" name="password" required value="<?= $usuario['password'] ?? '' ?>">
-                                <div id="passwordHelp" class="form-text">Nunca compartas tu password.</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="departamento_id" class="form-label">Departamento</label>
-                                <select name="departamento_id" id="departamento_id" class="form-select" required>
-                                    <?php foreach ($departamentos as $departamento): ?>
-                                        <option value=<?= $departamento['id'] ?>><?= $departamento['nombre'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="rol_id" class="form-label">Rol</label>
-                                <select name="rol_id" id="rol_id" class="form-select" required>
-                                    <?php foreach ($roles as $rol): ?>
-                                        <option value=<?= $rol['id'] ?>><?= $rol['nombre'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="mb-3 d-flex align-items-center gap-3">
-                                <img id="previewImage" src=<?= empty($usuario['imagen']) ? '/../../../public/assets/image/default-profile.svg' : $usuario['imagen'] ?>
-                                    alt="Previsualización" width="60" height="60" class="rounded-circle border" style="object-fit: cover;">
-                                <div class="flex-fill">
-                                    <label for="inputImage" class="form-label">Foto de perfil</label>
-                                    <input type="file" class="form-control" id="inputImage" name="imagen" accept="image/*" <?= isset($usuario) ? '' : 'required' ?>>
-                                    <div id="imageHelp" class="form-text">Añadir foto de perfil.</div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="d-flex gap-2">
-
-
-                            <button type="submit" class="btn btn-success flex-fill" name="registrarUsuario"><?= isset($usuario) ? 'Actualizar' : 'Registrar' ?></button>
-                            <a href="/public/usuario/listar" class="btn btn-danger flex-fill">Cancelar</a>
-                        </div>
-
-                    </form>
+                <!-- Name -->
+                <div>
+                    <label for="name" class="form-label">Nombre</label>
+                    <input type="text" name="name" id="name" class="form-control" required
+                        value="<?= htmlspecialchars($user['name'] ?? '') ?>">
                 </div>
-            </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="form-label">Correo</label>
+                    <input type="email" name="email" id="email" class="form-control" required
+                        value="<?= htmlspecialchars($user['email'] ?? '') ?>">
+                    <div class="form-text">Ingresa un correo electrónico válido.</div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" name="password" id="password" class="form-control" required
+                        value="<?= htmlspecialchars($user['password'] ?? '') ?>">
+                    <div class="form-text">Nunca compartas tu contraseña con nadie.</div>
+                </div>
+
+                <!-- Department -->
+                <div>
+                    <label for="department_id" class="form-label">Departamento</label>
+                    <select name="department_id" id="department_id" class="form-select" required>
+                        <?php foreach ($departments as $department): ?>
+                            <option value="<?= $department['id'] ?>"
+                                <?= (isset($user['department_id']) && $user['department_id'] == $department['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($department['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label for="role_id" class="form-label">Rol</label>
+                    <select name="role_id" id="role_id" class="form-select" required>
+                        <?php foreach ($roles as $role): ?>
+                            <option value="<?= $role['id'] ?>"
+                                <?= (isset($user['role_id']) && $user['role_id'] == $role['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($role['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Avatar -->
+                <div class="d-flex align-items-center gap-3">
+                    <img id="previewImage" src="<?= !empty($user['avatar']) ? htmlspecialchars($user['avatar']) : '/../../../public/assets/image/default-profile.svg' ?>"
+                        alt="Previsualización" width="60" height="60" class="rounded-circle border" style="object-fit: cover;">
+                    <div class="flex-fill">
+                        <label for="avatar" class="form-label">Foto de perfil</label>
+                        <input type="file" name="avatar" id="avatar" class="form-control" accept="image/*" <?= isset($user) ? '' : 'required' ?>>
+                        <div class="form-text">Selecciona una imagen de perfil.</div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-<?= isset($user['id']) ? 'warning' : 'success' ?> flex-fill">
+                        <?= isset($user['id']) ? 'Actualizar' : 'Registrar' ?>
+                    </button>
+                    <a href="/public/usuario/listar" class="btn btn-danger flex-fill">Cancelar</a>
+                </div>
+
+            </form>
         </div>
     </div>
 </div>

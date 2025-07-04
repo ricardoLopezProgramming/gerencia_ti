@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <div class="container-fluid h-100">
+    <div class="container-fluid p-0 h-100">
         <div class="d-flex">
             <nav class="sidebar">
                 <div class="p-4">
@@ -25,18 +25,15 @@
 
                 <div class="nav">
                     <!-- Visible para todos -->
-                    <a href="/public/dashboard/inicio" class="sidebar-link active">
+                    <a href="/public/dashboard/index" class="sidebar-link active">
                         <i class="fas fa-home me-3"></i>
                         <span class="hide-on-collapse">Dashboard</span>
                     </a>
 
-                    <!-- Solo Jefe de Proyecto y Administrador -->
-                    <?php if ($_SESSION['rol_id'] == 2 || $_SESSION['rol_id'] == 3): ?>
-                        <a href="#" class="sidebar-link">
+                        <a href="/public/horas/index" class="sidebar-link">
                             <i class="fa-solid fa-user-clock me-3"></i>
                             <span class="hide-on-collapse">Horas</span>
                         </a>
-                    <?php endif; ?>
 
                     <!-- Visible para todos -->
                     <a href="/public/proyecto/listar" class="sidebar-link">
@@ -51,7 +48,7 @@
                     </a>
 
                     <!-- Solo Administrador -->
-                    <?php if ($_SESSION['rol_id'] == 3): ?>
+                    <?php if ($_SESSION['role'] == 'administrador'): ?>
                         <a href="/public/usuario/listar" class="sidebar-link">
                             <i class="fas fa-users me-3"></i>
                             <span class="hide-on-collapse">Usuarios</span>
@@ -69,7 +66,7 @@
                     <?php endif; ?>
 
                     <!-- Jefe de Proyecto y Administrador -->
-                    <?php if ($_SESSION['rol_id'] == 2 || $_SESSION['rol_id'] == 3): ?>
+                    <?php if ($_SESSION['role'] == 'jefe de proyecto' || $_SESSION['role'] == 'administrador'): ?>
                         <a href="/public/reporte/listar" class="sidebar-link">
                             <i class="fas fa-chart-line me-3"></i>
                             <span class="hide-on-collapse">Reportes</span>
@@ -77,7 +74,7 @@
                     <?php endif; ?>
 
                     <!-- Solo Administrador -->
-                    <?php if ($_SESSION['rol_id'] == 3): ?>
+                    <?php if ($_SESSION['role'] == 'administrador'): ?>
                         <a href="/public/bitacora/listar" class="sidebar-link">
                             <i class="fas fa-clipboard-list me-3"></i>
                             <span class="hide-on-collapse">Bitácora</span>
@@ -92,10 +89,10 @@
                 <!-- imagenes random de perfil https://randomuser.me/api/portraits/women/70.jpg -->
                 <div class="profile-section">
                     <div class="d-flex align-items-center">
-                        <img src="<?= $_SESSION['imagen'] ?? '/../../../public/assets/image/default-profile.svg' ?>" style="height:60px" class="rounded-circle" alt="Profile">
+                        <img src="<?= $_SESSION['avatar'] != '' ? $_SESSION['avatar'] : '/../../../public/assets/image/default-profile.svg' ?>" style="height:60px" class="rounded-circle" alt="Profile">
                         <div class="profile-info">
-                            <h6 class="mb-0"><?= htmlspecialchars($_SESSION['nombre']) ?></h6>
-                            <small><?= $_SESSION['rol_id'] == 1 ? 'Empleado' : ($_SESSION['rol_id'] == 2 ? 'Jefe de proyecto' : 'Administrador') ?></small>
+                            <h6 class="mb-0"><?= htmlspecialchars($_SESSION['name']) ?></h6>
+                            <small><?= $_SESSION['role'] == 'empleado' ? 'Empleado' : ($_SESSION['role'] == 'jefe de proyecto' ? 'Jefe de proyecto' : 'Administrador') ?></small>
                         </div>
                     </div>
                 </div>
@@ -113,7 +110,7 @@
                 <div class="bg-light p-4" style="font-size: .9rem;">
                     <?= $content ?>
                 </div>
-
+                    
                 <!-- Footer corporativo -->
                 <div class="bg-dark text-light text-center p-2">
                     © <?= date('Y') ?> MyD Consultores - Todos los derechos reservados

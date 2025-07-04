@@ -1,0 +1,177 @@
+estoy realizando estre proyecto, te doy contexto
+
+
+🧠 Contexto General del Sistema "TareoApp"
+TareoApp es un sistema de gestión interna desarrollado para organizar proyectos, asignar tareas (tickets) y realizar un seguimiento detallado del trabajo diario del personal técnico y administrativo de una organización. Ha sido diseñado con una estructura MVC y se ejecuta como una aplicación web en PHP, utilizando PDO para la conexión a MySQL.
+
+Este sistema permite:
+
+Registro de usuarios según roles (Administrador, Jefe de Proyecto, Empleado).
+
+Creación y seguimiento de proyectos por jefes de proyecto.
+
+Registro de tareas (tickets) dentro de los proyectos.
+
+Asignación inteligente de usuarios a proyectos y tickets, respetando condiciones de disponibilidad.
+
+Registro de horas laborales diarias y sesiones específicas.
+
+Supervisión mediante un módulo de bitácora (auditoría).
+
+🗃️ Estructura de la Base de Datos MySQL
+sql
+Copiar
+Editar
+DROP DATABASE IF EXISTS gerencia_ti;
+CREATE DATABASE gerencia_ti DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE gerencia_ti;
+🔐 Roles de usuario (roles)
+id: Identificador único.
+
+name: Nombre del rol (empleado, jefe de proyecto, administrador).
+
+🏢 Departamentos (departments)
+id: Identificador único.
+
+name: Nombre del departamento (ej: TI, Administración).
+
+👤 Usuarios (users)
+id, name, email, password, avatar
+
+role_id: FK a roles.
+
+department_id: FK a departments.
+
+📊 Estados de proyectos (project_statuses)
+id, name (ej: pendiente, en proceso, terminado).
+
+🏗️ Proyectos (projects)
+name, description, start_date, end_date
+
+status_id: FK a project_statuses.
+
+manager_id: FK a users (debe tener rol jefe de proyecto).
+
+Cada proyecto puede tener múltiples empleados asignados, pero un empleado no puede estar en más de un proyecto activo.
+
+🤝 Asignación de empleados a proyectos (project_users)
+project_id, user_id
+
+Controla que un mismo empleado no se asigne a dos proyectos simultáneos no terminados.
+
+🎯 Estados de tickets (ticket_statuses)
+name: pendiente, en proceso, terminado
+
+📌 Tickets (tickets)
+Cada ticket pertenece a un proyecto.
+
+status_id: FK a ticket_statuses.
+
+Un empleado solo puede estar en un ticket activo a la vez por proyecto.
+
+Un empleado puede cambiar de ticket si el actual está pendiente, pero no si ya está en proceso.
+
+✅ Asignación de tickets a usuarios (ticket_users)
+Un ticket se asigna a uno o varios usuarios (empleados).
+
+Controla disponibilidad del empleado dentro del proyecto.
+
+📅 Registro laboral diario (work_logs)
+Cada usuario registra un día de trabajo.
+
+Campo notes opcional.
+
+⏱️ Sesiones laborales (work_sessions)
+Cada work_log puede tener múltiples sesiones de inicio/fin de trabajo.
+
+🧾 Bitácora del sistema (audit_logs)
+Registra toda modificación relevante:
+
+Usuario que la ejecutó.
+
+Rol.
+
+Tabla afectada.
+
+Datos anteriores y nuevos (en JSON).
+
+IP cliente.
+
+🧱 Estructura del Proyecto (MVC)
+pgsql
+Copiar
+Editar
+/app
+├── controllers
+│   └── ProyectoController.php
+│   └── UsuarioController.php
+│   └── TicketController.php
+│   └── SignInController.php
+├── models
+│   └── Proyecto.php
+│   └── Usuario.php
+│   └── Ticket.php
+│   └── TicketUsuario.php
+├── views
+│   └── proyecto
+│       └── info.view.php
+│       └── lista.view.php
+│       └── formulario.view.php
+│   └── ticket
+│       └── formulario.view.php
+│   └── dashboard
+│       └── dashboard.view.php
+│   └── signin
+│       └── signin.view.php
+├── core
+│   └── ORM.php
+│   └── Controller.php
+│   └── Router.php
+/public
+├── index.php
+/assets
+├── css
+├── js
+.env (si se usa)
+🔐 Control de Acceso (Roles)
+Administrador:
+
+Puede gestionar usuarios, departamentos, roles y ver la bitácora.
+
+Puede ver todo el sistema.
+
+Jefe de proyecto:
+
+Solo puede gestionar sus propios proyectos y los tickets dentro de ellos.
+
+Puede ver a sus empleados asignados.
+
+Empleado:
+
+Solo ve sus tickets.
+
+Solo puede registrar sus horas laborales.
+
+🔁 Reglas de Negocio Clave
+✅ Un empleado no puede ser asignado a más de un proyecto activo.
+
+✅ Un empleado no puede tener múltiples tickets activos en el mismo proyecto.
+
+✅ Solo se permite cambiar de ticket si el anterior está pendiente.
+
+✅ Las sesiones laborales están controladas con start_time < end_time.
+
+✅ Todos los cambios relevantes se registran en audit_logs.
+
+⚙️ Herramientas recomendadas
+PHP 8+
+
+MySQL 8+
+
+Bootstrap 5
+
+Apache/Nginx
+
+DotEnv (opcional)
+
+Librerías para PDF, Excel, o gráficos si se requiere en reportes.

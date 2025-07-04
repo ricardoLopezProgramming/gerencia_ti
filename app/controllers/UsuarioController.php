@@ -39,27 +39,27 @@ class UsuarioController extends Controller
 
     public function listar()
     {
-        $usuarios = $this->usuarioModel->getAllWithRoleAndDepartament();
+        $users = $this->usuarioModel->getAllWithRoleAndDepartment();
         $this->render(
             'usuario',
             'lista',
             [
-                'usuarios' => $usuarios,
+                'users' => $users,
                 'module_title' => 'Gestión de Usuarios'
             ],
             'site'
         );
     }
 
-    public function formulario()
+    public function registro()
     {
-        $departamentos = $this->departamentoModel->getAll();
+        $departments = $this->departamentoModel->getAll();
         $roles = $this->rolModel->getAll();
         $this->render(
             'usuario',
             'formulario',
             [
-                'departamentos' => $departamentos,
+                'departments' => $departments,
                 'roles' => $roles,
             ],
             'site'
@@ -69,14 +69,14 @@ class UsuarioController extends Controller
     public function actualizacion()
     {
         $roles = $this->rolModel->getAll();
-        $departamentos = $this->departamentoModel->getAll();
-        $usuario = isset($_GET['id']) ? $this->usuarioModel->getById($_GET['id'])[0] : null;
+        $departments = $this->departamentoModel->getAll();
+        $user = isset($_GET['id']) ? $this->usuarioModel->getById($_GET['id'])[0] : null;
         $this->render(
             'usuario',
             'formulario',
             [
-                'usuario' => $usuario,
-                'departamentos' => $departamentos,
+                'user' => $user,
+                'departments' => $departments,
                 'roles' => $roles,
             ],
             'site'
@@ -100,32 +100,39 @@ class UsuarioController extends Controller
     public function registrar()
     {
         $data = [
-            'nombre' => $_POST['nombre'],
-            'correo' => $_POST['correo'],
+            'id' => $_POST['id'] ?? null,
+            'name' => $_POST['name'],
+            'email' => $_POST['email'],
             'password' => $_POST['password'],
-            'rol_id' => $_POST['rol_id'],
-            'departamento_id' => $_POST['departamento_id'],
-            'imagen' => $_FILES['imagen'],
+            'avatar' => $_FILES['avatar'] ?? '',
+            'role_id' => $_POST['role_id'],
+            'department_id' => $_POST['department_id'],
         ];
 
-        if ($this->usuarioModel->insertUsuario($data)) {
+        if ($this->usuarioModel->insertUser($data)) {
             header('Location: /public/usuario/listar');
             exit;
         }
     }
 
 
+
     public function actualizar()
     {
-        $roles = $this->rolModel->getAll();
-        $this->render(
-            'usuario',
-            'formulario',
-            [
-                'roles' => $roles,
-            ],
-            'site'
-        );
+        $data = [
+            'id' => $_POST['id'],
+            'name' => $_POST['name'],
+            'email' => $_POST['email'],
+            'password' => $_POST['password'],
+            'avatar' => $_FILES['avatar'] ?? '',
+            'role_id' => $_POST['role_id'],
+            'department_id' => $_POST['department_id'],
+        ];
+
+        if ($this->usuarioModel->updateUser($data)) {
+            header('Location: /public/usuario/listar');
+            exit;
+        }
     }
 
     public function eliminar()
@@ -149,7 +156,7 @@ class UsuarioController extends Controller
                 'usuario',
                 'lista',
                 [
-                    'usuarios' => $this->usuarioModel->getByIdWithRoleAndDepartament($_GET['categoriaSelect'] === 'rol_id' ? $rol_id[$_GET['search']] : $_GET['search']),
+                    'usuarios' => $this->usuarioModel->getByIdWithRoleAndDepartment($_GET['categoriaSelect'] === 'rol_id' ? $rol_id[$_GET['search']] : $_GET['search']),
                 ],
                 'site'
             );

@@ -152,12 +152,15 @@ insert into estado_proyecto (nombre) values
 
 -- Asegúrate de tener roles y departamentos creados previamente
 
--- Administrador
 INSERT INTO usuario (nombre, correo, `password`, rol_id, imagen, departamento_id)
 VALUES
  ('ricardo', 'ricardo@myd.com', 'ricardo123', 
  (SELECT id FROM rol WHERE nombre = 'administrador'), '', 
- (SELECT id FROM departamento WHERE nombre = 'departamento de ti')),
+ (SELECT id FROM departamento WHERE nombre = 'departamento de ti'));
+select * from usuario;
+-- Administrador
+INSERT INTO usuario (nombre, correo, `password`, rol_id, imagen, departamento_id)
+VALUES
  ('maria', 'maria@myd.com', 'maria123', 
  (SELECT id FROM rol WHERE nombre = 'jefe de proyecto'), '', 
  (SELECT id FROM departamento WHERE nombre = 'departamento de administracion')),
@@ -175,9 +178,11 @@ VALUES
  (SELECT id FROM departamento WHERE nombre = 'departamento de ti'));
 
 INSERT INTO usuario (nombre, correo, `password`, rol_id, imagen, departamento_id) VALUES
-('juan ramirez', 'juan.ramirez@myd.com', 'admin123',
+('juan', 'juan@myd.com', 'juan123',
  (SELECT id FROM rol WHERE nombre = 'administrador'), '', 
- (SELECT id FROM departamento WHERE nombre = 'departamento de administracion')),
+ (SELECT id FROM departamento WHERE nombre = 'departamento de administracion'));
+
+INSERT INTO usuario (nombre, correo, `password`, rol_id, imagen, departamento_id) VALUES
 ('carla flores', 'carla.flores@myd.com', 'admin456',
  (SELECT id FROM rol WHERE nombre = 'administrador'), '', 
  (SELECT id FROM departamento WHERE nombre = 'departamento de administracion')),
@@ -309,7 +314,7 @@ INSERT INTO ticket_usuario (ticket_id, usuario_id) VALUES
 (15, 23);
 
 
-
+USE gerencia_ti;
 -- REINICIO TOTAL DE TABLAS
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -459,6 +464,11 @@ CREATE TABLE registro_laboral (
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
     UNIQUE (usuario_id, fecha)
 );
+SELECT u.nombre, r.fecha, s.hora_inicio, s.hora_fin
+FROM sesiones_laborales s
+JOIN registro_laboral r ON s.registro_id = r.id
+JOIN usuario u ON r.usuario_id = u.id
+ORDER BY r.fecha DESC;
 
 -- 11. Sesiones laborales (por día)
 CREATE TABLE sesiones_laborales (

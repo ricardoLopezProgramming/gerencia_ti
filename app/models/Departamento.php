@@ -3,6 +3,6 @@ class Departamento extends ORM
 {
     public function __construct($connection, $id = 'id')
     {
-        parent::__construct($id, 'departamento', $connection);
+        parent::__construct($id, 'departments', $connection);
     }
 }

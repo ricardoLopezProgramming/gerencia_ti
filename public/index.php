@@ -5,7 +5,7 @@ session_start();
 $currentUri = $_SERVER['REQUEST_URI'];
 
 // Si no está logueado y NO está en la página de login
-if (!isset($_SESSION['correo']) && !str_contains($currentUri, '/signin')) {
+if (!isset($_SESSION['email']) && !str_contains($currentUri, '/signin')) {
     header("Location: /public/signin/signin");
     exit;
 }

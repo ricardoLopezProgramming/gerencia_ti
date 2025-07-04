@@ -3,14 +3,14 @@
         <form action="/public/signin/authentication" method="post">
             <div class="mb-3">
                 <label for="emailName" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="emailName" name="correo" aria-describedby="emailHelp" required>
+                <input type="email" class="form-control" id="emailName" name="email" aria-describedby="emailHelp" required>
                 <div id="emailHelp" class="form-text">
                     Ingresa tu correo.
                 </div>
             </div>
             <div class="mb-3">
                 <label for="inputPassword" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" name="contraseña" required>
+                <input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelp" name="password" required>
                 <div id="passwordHelp" class="form-text">
                     Nunca compartas tu contraseña.
                 </div>

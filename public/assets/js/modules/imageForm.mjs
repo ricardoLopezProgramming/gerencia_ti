@@ -1,8 +1,10 @@
 export default function imageform() {
-    const inputImage = document.getElementById("inputImage");
+    const avatar = document.getElementById("avatar");
     const previewImage = document.getElementById("previewImage");
 
-    inputImage.addEventListener("change", (event) => {
+    if (!avatar || !previewImage) return;
+
+    avatar.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file && file.type.startsWith("image/")) {
             const tempUrl = URL.createObjectURL(file);

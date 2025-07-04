@@ -2,12 +2,17 @@
 require_once(__DIR__ . '/../models/Proyecto.php');
 require_once(__DIR__ . '/../models/EstadoProyecto.php');
 require_once(__DIR__ . '/../models/Usuario.php');
+require_once(__DIR__ . '/../models/UsuarioProjecto.php');
+require_once(__DIR__ . '/../models/Ticket.php');
 
 class ProyectoController extends Controller
 {
     private $proyectoModel;
     private $estadoProyectoModel;
     private $usuarioModel;
+    private $usuarioProjectoModel;
+    private $ticketModel;
+
     private PDO $connection;
 
     public function __construct(PDO $connection)
@@ -17,108 +22,156 @@ class ProyectoController extends Controller
         $this->estadoProyectoModel = new EstadoProyecto($connection);  // Asignar a propiedad
         $this->usuarioModel = new Usuario($connection);                // Asignar a propiedad
         $this->proyectoModel = new Proyecto($connection);
+        $this->usuarioProjectoModel = new UsuarioProjecto($connection);
+        $this->ticketModel = new Ticket($connection);
     }
 
     public function listar()
     {
-        $proyectos = $this->proyectoModel->getAllWithEstadoAndBoss();
+        $role = $_SESSION['role'];
+        $id = $_SESSION['id'];
+
+        if ($role == 'administrador') {
+            // Administrador: Ver todos los proyectos
+            $projects = $this->proyectoModel->getAllWithEstadoAndBoss();
+        } elseif ($role == 'jefe de proyecto') {
+            // Jefe de proyecto: solo los que él ha creado
+            $projects = $this->proyectoModel->getManagerProjects($id);
+        } else {
+            // Empleado: solo donde está asignado
+            $projects = $this->proyectoModel->getEmployeeProjects($id);
+        }
+
         $this->render(
             'proyecto',
             'lista',
-            ['proyectos' => $proyectos],
+            ['projects' => $projects],
             'site'
         );
     }
+
 
     public function detalles()
     {
         $id = $_GET['id'];
-        $proyecto = $this->proyectoModel->getById($id)[0];
+        $project = $this->proyectoModel->getById($id)[0];
+        $ticketModel = new Ticket($this->connection, 'project_id');
+        $tickets = $ticketModel->getAllWithStatusAndProjectById($id);
+        $users = $this->usuarioProjectoModel->getUsersByProjectId($id);
         $this->render(
             'proyecto',
             'detalles',
-            ['proyecto' => $proyecto],
-            'site'
-        );
-    }
-
-    public function formulario()
-    {
-        $estados = $this->estadoProyectoModel->getAll();
-        $usuarios = $this->usuarioModel->getAll();
-    
-        $this->render(
-            'proyecto',
-            'formulario',
             [
-                'proyectoEditar' => null,  // Al crear no hay proyecto previo
-                'estados' => $estados,
-                'usuarios' => $usuarios,
-                'usuariosAsignadosIds' => [],  // Nada asignado en creación
+                'project' => $project,
+                'tickets' => $tickets,
+                'users' => $users,
             ],
             'site'
         );
     }
-    
+
+    public function registro()
+    {
+        $project_statuses = $this->estadoProyectoModel->getAll();
+        $users = $this->usuarioModel->getAll();
+        $manager = $this->usuarioModel->getById($_SESSION['id'])[0];
+        $avalibleUsers = $this->usuarioProjectoModel->getAvailableUsers();
+
+        $this->render(
+            'proyecto',
+            'formulario',
+            [
+                'proyectoEditar' => null,
+                'project_statuses' => $project_statuses,
+                'usuarios' => $avalibleUsers, // todos los usuarios disponibles para asignar
+                'usuariosAsignadosIds' => [],
+                'manager' => $manager,
+            ],
+            'site'
+        );
+    }
+
 
     public function actualizacion()
     {
-        $proyecto = isset($_GET['id']) ? $this->proyectoModel->getById($_GET['id'])[0] : null;
+        if (!isset($_GET['id'])) {
+            die("Error: ID del proyecto no definido.");
+        }
+
+        $proyecto = $this->proyectoModel->getById($_GET['id'])[0] ?? null;
         $estados = $this->estadoProyectoModel->getAll();
-        $usuarios = $this->usuarioModel->getAll();
-    
-        $usuariosAsignados = $proyecto
-            ? $this->proyectoModel->getUsuariosAsignados($proyecto['id'])
-            : [];
-    
-        // Extrae sólo los ids para marcar en el formulario
-        $idsAsignados = array_column($usuariosAsignados, 'id');
-    
+
+        // Usuarios asignados al proyecto (actuales)
+        $usuariosAsignados = $this->proyectoModel->getUsuariosAsignados($proyecto['id'] ?? 0);
+
+        // Usuarios disponibles (no asignados y en proyectos terminados)
+        $usuariosDisponibles = $this->usuarioProjectoModel->getAvailableUsers();
+
+        // Combinar ambos arrays sin duplicados (en base a 'id')
+        // Combinar asignados y disponibles sin duplicados
+        $usuariosCombinados = [];
+
+        foreach ($usuariosAsignados as $ua) {
+            $usuariosCombinados[$ua['id']] = $ua;
+        }
+        foreach ($usuariosDisponibles as $ud) {
+            $usuariosCombinados[$ud['id']] = $ud;
+        }
+
+        // Ahora $usuariosCombinados es un array asociativo con usuarios únicos
+        // Para la vista, puedes pasarlo como array indexado así:
+        $usuariosCombinados = array_values($usuariosCombinados);
+
+
+        // Extrae sólo los IDs para marcar en el form
+        $usuariosAsignadosIds = array_column($usuariosAsignados, 'id');
+
         $this->render(
             'proyecto',
             'formulario',
             [
                 'proyectoEditar' => $proyecto,
-                'estados' => $estados,
-                'usuarios' => $usuarios,
-                'usuariosAsignadosIds' => $idsAsignados,
+                'project_statuses' => $estados,
+                'usuarios' => $usuariosCombinados,
+                'usuariosAsignadosIds' => $usuariosAsignadosIds,
+                'manager' => $this->usuarioModel->getById($proyecto['manager_id'])[0],
             ],
             'site'
         );
     }
-    
+
 
     public function actualizar()
     {
         if (!isset($_POST['id']) || empty($_POST['id'])) {
             die("Error: ID del proyecto no definido.");
         }
-    
+
         $data = [
             'id' => $_POST['id'],
-            'nombre' => $_POST['nombre'],
-            'descripcion' => $_POST['descripcion'],
-            'estado_id' => $_POST['estado_id'],
-            'jefe_id' => $_POST['jefe_id'],
-            'fecha_inicio' => $_POST['fecha_inicio'],
-            'fecha_fin' => $_POST['fecha_fin'],
+            'name' => $_POST['name'],
+            'description' => $_POST['description'],
+            'status_id' => $_POST['status_id'],
+            'manager_id' => $_POST['manager_id'],
+            'start_date' => $_POST['start_date'],
+            'end_date' => $_POST['end_date'],
         ];
-    
+
         // Actualiza datos del proyecto
         $this->proyectoModel->updateProyecto($data);
-    
-        // Actualiza usuarios asignados (opcional pero recomendable)
+
+        // Actualiza usuarios asignados
         $this->proyectoModel->eliminarUsuariosAsignados($data['id']);
-        if (!empty($_POST['usuarios'])) {
-            foreach ($_POST['usuarios'] as $usuarioId) {
+        if (!empty($_POST['users'])) {
+            foreach ($_POST['users'] as $usuarioId) {
                 $this->proyectoModel->asignarUsuario($data['id'], (int)$usuarioId);
             }
         }
-    
+
         header('Location: /public/proyecto/listar');
         exit;
     }
-    
+
 
     public function eliminar()
     {
@@ -129,43 +182,26 @@ class ProyectoController extends Controller
 
     public function registrar()
     {
-        // Validar que se reciban los datos mínimos necesarios
-        if (
-            empty($_POST['nombre']) ||
-            empty($_POST['fecha_inicio']) ||
-            empty($_POST['fecha_fin']) ||
-            empty($_POST['estado_id']) ||
-            empty($_POST['jefe_id'])
-        ) {
-            // Podrías redirigir con error o mostrar mensaje
-            header('Location: /public/proyecto/formulario?error=Faltan+datos+obligatorios');
-            exit;
-        }
-    
-        // Preparar datos del proyecto
         $data = [
-            'nombre' => $_POST['nombre'],
-            'descripcion' => $_POST['descripcion'] ?? '',
-            'estado_id' => $_POST['estado_id'],
-            'jefe_id' => $_POST['jefe_id'],
-            'fecha_inicio' => $_POST['fecha_inicio'],
-            'fecha_fin' => $_POST['fecha_fin'],
+            'name' => $_POST['name'],
+            'description' => $_POST['description'],
+            'start_date' => $_POST['start_date'],
+            'end_date' => $_POST['end_date'],
+            'status_id' => $_POST['status_id'],
+            'manager_id' => $_POST['manager_id'],
         ];
-    
-        // Crear el proyecto y obtener el ID insertado
-        $nuevoProyectoId = $this->proyectoModel->create($data);
-    
-        // Si hay usuarios asignados desde el formulario (select múltiple)
-        if (!empty($_POST['usuarios']) && is_array($_POST['usuarios'])) {
-            foreach ($_POST['usuarios'] as $usuarioId) {
-                // Insertar relación proyecto-usuario
-                $this->proyectoModel->asignarUsuario($nuevoProyectoId, $usuarioId);
+
+        // Insertar proyecto y obtener el nuevo ID
+        $newProjectId = $this->proyectoModel->insert($data);
+
+        // Asignar usuarios al proyecto (si hay)
+        if (!empty($_POST['users'])) {
+            foreach ($_POST['users'] as $usuarioId) {
+                $this->usuarioProjectoModel->insertProjectUser((int)$newProjectId, (int)$usuarioId);
             }
         }
-    
-        // Redirigir a la lista o detalles después de crear
+
         header('Location: /public/proyecto/listar');
         exit;
     }
-    
 }

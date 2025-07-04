@@ -26,7 +26,7 @@
             <div class="shadow-sm bento-card bg-white text-dark p-4 h-500px overflow-auto border">
                 <table class="table table-hover">
                     <caption><?= $titulo ?? 'Listado' ?></caption>
-                    <thead class="table-success">
+                    <thead class="table-primary">
                         <tr>
                             <?php foreach (array_keys($dataset[0]) as $column): ?>
                                 <th><?= ucfirst(str_replace('_', ' ', $column)) ?></th>

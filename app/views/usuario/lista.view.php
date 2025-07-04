@@ -54,7 +54,7 @@
                         <button class="btn btn-outline-secondary navbar-icon-btn" title="Recargar">
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <a href="/public/usuario/formulario" class="btn btn-outline-primary navbar-icon-btn" title="Ver detalles">Registrar</a>
+                        <a href="/public/usuario/registro" class="btn btn-outline-primary navbar-icon-btn" title="Ver detalles">Registrar</a>
                     </div>
                 </nav>
             </div>
@@ -76,32 +76,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($usuarios as $usuario): ?>
+                        <?php foreach ($users as $user): ?>
                             <tr>
-                                <td><?= htmlspecialchars($usuario['id']) ?></td>
+                                <td><?= htmlspecialchars($user['id']) ?></td>
                                 <td class="mx-auto">
-                                    <img id="previewImage" src="<?= $usuario['imagen'] !== '' ? $usuario['imagen'] : '/../../../public/assets/image/default-profile.svg' ?>" alt="Previsualización" width="60" height="60" class="rounded-circle border" style="object-fit: cover;">
+                                    <img id="previewImage" src="<?= $user['avatar'] !== '' ? $user['avatar'] : '/../../../public/assets/image/default-profile.svg' ?>" alt="Previsualización" width="60" height="60" class="rounded-circle border" style="object-fit: cover;">
                                 </td>
-                                <td><?= htmlspecialchars($usuario['nombre']) ?></td>
-                                <td><?= htmlspecialchars($usuario['correo']) ?></td>
-                                <td><?= htmlspecialchars($usuario['password']) ?></td>
-                                <td><?= htmlspecialchars($usuario['departamento']) ?></td>
-                                <td><?= htmlspecialchars($usuario['rol']) ?></td>
+                                <td><?= htmlspecialchars($user['name']) ?></td>
+                                <td><?= htmlspecialchars($user['email']) ?></td>
+                                <td><?= htmlspecialchars($user['password']) ?></td>
+                                <td><?= htmlspecialchars($user['department']) ?></td>
+                                <td><?= htmlspecialchars($user['role']) ?></td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             Acciones
                                         </button>
                                         <ul class="dropdown-menu" style="--bs-dropdown-link-hover-bg: var(--bs-primary); --bs-dropdown-link-hover-color: white;">
-                                            <li><a class="dropdown-item" href="/public/usuario/detalles?id=<?= $usuario['id'] ?>">Detalles</a></li>
-                                            <li><a class="dropdown-item" href="/public/usuario/actualizacion?id=<?= $usuario['id'] ?>">Actualizar</a></li>
+                                            <li><a class="dropdown-item" href="/public/usuario/detalles?id=<?= $user['id'] ?>">Detalles</a></li>
+                                            <li><a class="dropdown-item" href="/public/usuario/actualizacion?id=<?= $user['id'] ?>">Actualizar</a></li>
                                             <li>
                                                 <a
                                                     class="dropdown-item" href="#"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalEliminar"
-                                                    data-id="<?= $usuario['id'] ?>"
-                                                    data-nombre="<?= htmlspecialchars($usuario['nombre']) ?>">
+                                                    data-id="<?= $user['id'] ?>"
+                                                    data-nombre="<?= htmlspecialchars($user['name']) ?>">
                                                     Eliminar
                                                 </a>
                                             </li>

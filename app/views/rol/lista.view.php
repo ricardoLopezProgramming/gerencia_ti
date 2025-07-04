@@ -1,8 +1,7 @@
 <div class="container">
     <div class="row g-4">
         <div class="col-md-12">
-            <div class="shadow-sm bento-card text-white p-3 h-100px d-flex align-items-center justify-content-between border bg-white">
-                <nav class="navbar navbar-expand-lg w-100">
+            <div class="shadow-sm bento-card bg-white text-dark p-3 d-flex justify-content-between align-items-center border">
                     <div class="container-fluid d-flex justify-content-start">
                         <form action="/public/rol/search" id="searchForm" class="d-flex ms-3 my-auto" role="search" method="GET">
                             <input class="form-control me-2" type="search" name="search" id="searchInput" placeholder="Buscar..." aria-label="Buscar">
@@ -18,9 +17,8 @@
                         <button class="btn btn-outline-secondary navbar-icon-btn" title="Recargar">
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <a href="/public/usuario/formulario" class="btn btn-outline-primary navbar-icon-btn" title="Ver detalles">Registrar</a>
+                        <a href="/public/usuario/registro" class="btn btn-outline-primary navbar-icon-btn" title="Ver detalles">Registrar</a>
                     </div>
-                </nav>
             </div>
         </div>
         <div class="col-md-12">
@@ -38,7 +36,7 @@
                         <?php foreach ($roles as $rol): ?>
                             <tr>
                                 <td><?= htmlspecialchars($rol['id']) ?></td>
-                                <td><?= htmlspecialchars($rol['nombre']) ?></td>
+                                <td><?= htmlspecialchars($rol['name']) ?></td>
 
                                 <td>
                                     <div class="dropdown">

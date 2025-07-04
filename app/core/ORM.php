@@ -35,27 +35,26 @@ class ORM
     public function updateById($id, $data)
     {
         $sql = "UPDATE {$this->table} SET ";
-        $setParts = [];
 
         foreach ($data as $key => $value) {
-            // Escapar el nombre del parámetro de forma segura
-            $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '', $key);
-            $setParts[] = "{$key} = :{$safeKey}";
+            if ($key === 'id') continue;
+            $sql .= "{$key} = :{$key},";
         }
 
-        $sql .= implode(', ', $setParts);
+        $sql = trim($sql, ','); 
         $sql .= " WHERE {$this->id} = :id";
 
         $stm = $this->connection->prepare($sql);
 
         foreach ($data as $key => $value) {
-            $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '', $key);
-            $stm->bindValue(":{$safeKey}", $value);
+            if ($key === 'id') continue; // 👈 evita bind duplicado
+            $stm->bindValue(":{$key}", $value);
         }
 
         $stm->bindValue(":id", $id);
-        $stm->execute();
+        return $stm->execute();
     }
+
 
     public function insert($data)
     {
@@ -72,12 +71,13 @@ class ORM
         $sql = trim($sql, ',');
         $sql .= ")";
 
-        $stm = $this->connection->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
         foreach ($data as $key => $value) {
-            $stm->bindValue(":{$key}", $value);
+            $stmt->bindValue(":{$key}", $value);
         }
 
-        $stm->execute();
+        $stmt->execute();
+        return $this->connection->lastInsertId();
     }
 
     public function paginate($page, $limit)

@@ -1,0 +1,168 @@
+Documentación y Contexto del Sistema de Gestión de Proyectos y Tickets para Gerencia TI
+Descripción General
+Este sistema está diseñado para la gestión integral de proyectos tecnológicos dentro de una organización. Permite la administración de proyectos, asignación de empleados, control de tickets asociados, registro de tiempos de trabajo y auditoría detallada de las acciones realizadas en el sistema.
+
+Está orientado a organizaciones que requieren un control riguroso sobre el ciclo de vida de sus proyectos y tareas, asegurando trazabilidad y transparencia mediante roles, departamentos y estados configurables.
+
+Modelo de Datos y Relacionamiento
+El sistema utiliza una base de datos relacional que contiene tablas para manejar roles, usuarios, departamentos, proyectos, tickets, estados, asignaciones y registros de actividad y auditoría.
+
+Se asegura integridad referencial mediante claves foráneas y restricciones como CHECK y UNIQUE, y se usa ON DELETE CASCADE para limpieza automática en eliminaciones.
+
+Estructura del Script SQL para la Base de Datos
+sql
+Copiar
+Editar
+-- Elimina la base de datos si existe para evitar conflictos
+DROP DATABASE IF EXISTS gerencia_ti;
+
+-- Crea la base de datos con codificación UTF8MB4 para soporte completo de caracteres
+CREATE DATABASE gerencia_ti DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Selecciona la base de datos para el uso
+USE gerencia_ti;
+
+-- TABLA roles: Define los roles del sistema, p.ej. administrador, jefe de proyecto, empleado
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- TABLA departments: Define los departamentos internos de la organización
+CREATE TABLE departments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- TABLA users: Usuarios del sistema, con referencia a rol y departamento
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, -- Almacena hash seguro de contraseña
+    avatar VARCHAR(255),            -- URL o ruta del avatar
+    role_id INT NOT NULL,
+    department_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+
+-- TABLA project_statuses: Define estados posibles para proyectos (Ej: Pendiente, En progreso, Finalizado)
+CREATE TABLE project_statuses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- TABLA projects: Proyectos con información principal y referencias
+CREATE TABLE projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status_id INT DEFAULT 1,          -- Estado inicial por defecto
+    manager_id INT NOT NULL,          -- Jefe de proyecto (usuario)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (status_id) REFERENCES project_statuses(id),
+    FOREIGN KEY (manager_id) REFERENCES users(id),
+    CONSTRAINT chk_project_dates CHECK (start_date <= end_date) -- Validación de fechas coherentes
+);
+
+-- TABLA project_users: Asignaciones de usuarios a proyectos (relación muchos a muchos)
+CREATE TABLE project_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (project_id, user_id) -- Evita asignaciones duplicadas
+);
+
+-- TABLA ticket_statuses: Estados posibles para tickets (Ej: Abierto, En progreso, Cerrado)
+CREATE TABLE ticket_statuses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- TABLA tickets: Tareas o incidencias vinculadas a proyectos
+CREATE TABLE tickets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    status_id INT DEFAULT 1,
+    project_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (status_id) REFERENCES ticket_statuses(id),
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
+
+-- TABLA ticket_users: Usuarios asignados a tickets específicos
+CREATE TABLE ticket_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id INT NOT NULL,
+    user_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- TABLA work_logs: Registro diario de trabajo de usuarios con notas
+CREATE TABLE work_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    date DATE NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (user_id, date) -- Un solo registro por usuario y día
+);
+
+-- TABLA work_sessions: Sesiones de trabajo con horas de inicio y fin
+CREATE TABLE work_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    log_id INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME DEFAULT NULL,
+    FOREIGN KEY (log_id) REFERENCES work_logs(id) ON DELETE CASCADE,
+    CONSTRAINT chk_session_times CHECK (end_time IS NULL OR end_time > start_time) -- Validación lógica
+);
+
+-- TABLA audit_logs: Registro de auditoría para trazabilidad y seguridad
+CREATE TABLE audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,            -- Usuario que ejecutó la acción
+    role_name VARCHAR(50) NOT NULL,  -- Rol de usuario en el momento de la acción
+    action VARCHAR(50) NOT NULL,     -- Acción realizada (Ej: Crear, Actualizar, Eliminar)
+    affected_table VARCHAR(100) NOT NULL, -- Tabla afectada
+    record_id INT DEFAULT NULL,      -- ID del registro afectado (si aplica)
+    old_data JSON,                   -- Datos anteriores (para actualización y eliminación)
+    new_data JSON,                   -- Datos nuevos (para creación y actualización)
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    client_ip VARCHAR(50) DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+Recomendaciones y Buenas Prácticas
+Seguridad: Las contraseñas se deben almacenar usando algoritmos de hash seguros como bcrypt o Argon2.
+
+Roles y permisos: Implementar control de acceso basado en roles para permitir solo acciones autorizadas.
+
+Integridad referencial: Se manejan claves foráneas y restricciones para evitar inconsistencias.
+
+Auditoría: El registro detallado de acciones en audit_logs es fundamental para seguimiento y detección de problemas.
+
+Validación de datos: Se usan constraints para validar fechas y evitar datos erróneos.
+
+Manejo de estados: Los estados de proyectos y tickets son parametrizables para adaptarse a cambios en procesos.
+
+Limpieza automática: Uso de ON DELETE CASCADE en asignaciones para mantener base de datos limpia sin registros huérfanos.
+
+Posibles Extensiones
+Gestión de archivos adjuntos en tickets o proyectos.
+
+Notificaciones y alertas por correo o en el sistema.
+
+Reportes y dashboards para visualización de progreso.
+
+Integración con sistemas externos (LDAP, SSO, herramientas de gestión).
