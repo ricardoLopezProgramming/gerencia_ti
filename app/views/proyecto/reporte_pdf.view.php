@@ -35,11 +35,21 @@
         font-size: 11px;
         color: #444;
     }
+
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+    }
 </style>
 
-<div class="shadow-sm bento-card text-dark p-4 overflow-auto border border-secondary" style="height: 85dvh;">
-    <h1>Reporte de Proyectos</h1>
-
+<div class="shadow-sm bento-card text-dark p-4 overflow-auto border border-secondary" style="height: 85dvh; position: relative;">
+    <h1 class="text-center">Reporte de Proyectos</h1>
+    <?php if ($_SESSION['role'] === 'jefe de proyecto'): ?>
+        <a href="/public/proyecto/generarReporte" class="btn btn-outline-success no-print" target="_blank" style="position: absolute; right: 2px; top: 10px;">
+            <i class="fa-regular fa-file-pdf"></i> Descargar PDF
+        </a>
+    <?php endif; ?>
     <?php if (empty($projects)): ?>
         <p>No existen proyectos registrados.</p>
     <?php else: ?>

@@ -221,7 +221,13 @@ class ProyectoController extends Controller
         foreach ($projects as &$project) {
             $project['tickets'] = $this->ticketModel->getAllWithStatusAndProjectById($project['id']);
             $project['users'] = $this->usuarioProjectoModel->getUsersByProjectId($project['id']);
+            // Adjuntar los usuarios a cada ticket
+            foreach ($project['tickets'] as &$ticket) {
+                $ticket['users'] = $this->ticketModel->getUsuariosAsignados($ticket['id']);
+            }
+            unset($ticket); // Buen hábito tras usar referencias
         }
+        unset($project);
     
         $this->render(
             'proyecto',
