@@ -4,6 +4,7 @@ require_once(__DIR__ . '/../models/EstadoProyecto.php');
 require_once(__DIR__ . '/../models/Usuario.php');
 require_once(__DIR__ . '/../models/UsuarioProjecto.php');
 require_once(__DIR__ . '/../models/Ticket.php');
+use vendor\Dompdf\Dompdf;
 
 class ProyectoController extends Controller
 {
@@ -202,6 +203,36 @@ class ProyectoController extends Controller
         }
 
         header('Location: /public/proyecto/listar');
+        exit;
+    }
+
+    public function reporte()
+    {
+        // Solo jefe de proyecto puede acceder
+        if ($_SESSION['role'] !== 'jefe de proyecto') {
+            die('No tienes permisos para generar este reporte.');
+        }
+
+        $manager_id = $_SESSION['id'];
+        $projects = $this->proyectoModel->getManagerProjects($manager_id);
+
+        foreach ($projects as &$project) {
+            $project['tickets'] = $this->ticketModel->getAllWithStatusAndProjectById($project['id']);
+            $project['users'] = $this->usuarioProjectoModel->getUsersByProjectId($project['id']);
+        }
+
+        // Generar HTML para el reporte
+        ob_start();
+        include(__DIR__ . '/../views/proyecto/reporte_pdf.view.php');
+        $html = ob_get_clean();
+
+        // Generar PDF con Dompdf
+        require_once(__DIR__ . '/../../vendor/autoload.php');
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        $dompdf->stream("reporte_proyectos.pdf");
         exit;
     }
 }
