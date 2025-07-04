@@ -53,13 +53,14 @@ class Ticket extends ORM
             FROM tickets t
             INNER JOIN ticket_statuses ts ON t.status_id = ts.id
             INNER JOIN projects p ON t.project_id = p.id
-            WHERE {$this->id} = :project_id
+            WHERE t.project_id = :project_id
             ORDER BY t.id ASC
         ";
         $stmt = $this->connection->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public function getProjectByTicket($ticket_id)
     {
         $sql = "

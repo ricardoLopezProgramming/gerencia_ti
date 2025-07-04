@@ -67,7 +67,7 @@
 
                     <!-- Jefe de Proyecto y Administrador -->
                     <?php if ($_SESSION['role'] == 'jefe de proyecto' || $_SESSION['role'] == 'administrador'): ?>
-                        <a href="/public/reporte/listar" class="sidebar-link">
+                        <a href="/public/proyecto/reportes" class="sidebar-link">
                             <i class="fas fa-chart-line me-3"></i>
                             <span class="hide-on-collapse">Reportes</span>
                         </a>

@@ -1,10 +1,13 @@
 <?php
+
+use Dompdf\Dompdf;
+
 require_once(__DIR__ . '/../models/Proyecto.php');
 require_once(__DIR__ . '/../models/EstadoProyecto.php');
 require_once(__DIR__ . '/../models/Usuario.php');
 require_once(__DIR__ . '/../models/UsuarioProjecto.php');
 require_once(__DIR__ . '/../models/Ticket.php');
-use vendor\Dompdf\Dompdf;
+
 
 class ProyectoController extends Controller
 {
@@ -206,29 +209,54 @@ class ProyectoController extends Controller
         exit;
     }
 
-    public function reporte()
+    public function reportes() {
+        // Solo jefe de proyecto puede acceder (opcional si quieres proteger la vista)
+        if ($_SESSION['role'] !== 'jefe de proyecto') {
+            die('No tienes permisos para ver este reporte.');
+        }
+        $manager_id = $_SESSION['id'];
+        $projects = $this->proyectoModel->getManagerProjects($manager_id);
+    
+        // Adjunta tickets y usuarios a cada proyecto igual que en el PDF
+        foreach ($projects as &$project) {
+            $project['tickets'] = $this->ticketModel->getAllWithStatusAndProjectById($project['id']);
+            $project['users'] = $this->usuarioProjectoModel->getUsersByProjectId($project['id']);
+        }
+    
+        $this->render(
+            'proyecto',
+            'reporte_pdf', // Asegúrate de que es la vista correcta
+            [
+                'projects' => $projects,
+            ],
+            'site'
+        );
+    }
+
+    public function generarReporte()
     {
         // Solo jefe de proyecto puede acceder
         if ($_SESSION['role'] !== 'jefe de proyecto') {
             die('No tienes permisos para generar este reporte.');
         }
-
+    
         $manager_id = $_SESSION['id'];
         $projects = $this->proyectoModel->getManagerProjects($manager_id);
-
+    
         foreach ($projects as &$project) {
             $project['tickets'] = $this->ticketModel->getAllWithStatusAndProjectById($project['id']);
             $project['users'] = $this->usuarioProjectoModel->getUsersByProjectId($project['id']);
         }
-
+    
         // Generar HTML para el reporte
         ob_start();
         include(__DIR__ . '/../views/proyecto/reporte_pdf.view.php');
         $html = ob_get_clean();
-
-        // Generar PDF con Dompdf
-        require_once(__DIR__ . '/../../vendor/autoload.php');
-        $dompdf = new \Dompdf\Dompdf();
+    
+        // SOLO ESTA LÍNEA, si es instalación manual:
+        require_once(__DIR__ . '/../dompdf/autoload.inc.php');
+        $dompdf = new Dompdf();
+    
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
